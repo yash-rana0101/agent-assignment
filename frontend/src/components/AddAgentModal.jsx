@@ -82,9 +82,9 @@ const AddAgentModal = ({ onClose, onSuccess }) => {
   };
 
   return (
-    // Backdrop
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
+    // Backdrop — bottom-sheet on mobile, centred on sm+
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-0 sm:px-4">
+      <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-xl p-5 sm:p-6 relative max-h-[92vh] overflow-y-auto">
         {/* Close button */}
         <button
           onClick={onClose}

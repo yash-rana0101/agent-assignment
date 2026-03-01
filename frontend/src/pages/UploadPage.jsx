@@ -73,10 +73,10 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Upload CSV / Excel</h2>
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Upload CSV / Excel</h2>
         <p className="text-sm text-gray-500 mt-0.5">
           Upload a file with FirstName, Phone and Notes columns. Tasks will be
           distributed equally among all registered agents.
@@ -89,7 +89,7 @@ const UploadPage = () => {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl px-6 py-14 text-center cursor-pointer transition-colors ${dragOver
+        className={`border-2 border-dashed rounded-xl px-4 sm:px-6 py-10 sm:py-14 text-center cursor-pointer transition-colors ${dragOver
             ? "border-blue-400 bg-blue-50"
             : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
           }`}

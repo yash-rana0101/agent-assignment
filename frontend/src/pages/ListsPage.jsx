@@ -51,10 +51,10 @@ const ListsPage = () => {
   const activeLists = batchLists.find((l) => l.agent._id === activeAgent);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Distributed Lists</h2>
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Distributed Lists</h2>
         <p className="text-sm text-gray-500 mt-0.5">
           Browse uploaded batches and view each agent's assigned tasks
         </p>
@@ -76,18 +76,19 @@ const ListsPage = () => {
           <p className="text-gray-400 text-xs mt-1">Go to "Upload CSV" to distribute a list.</p>
         </div>
       ) : (
-        <div className="flex gap-5">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-5">
           {/* ── Batch selector ── */}
-          <div className="w-64 flex-shrink-0">
+          <div className="w-full md:w-64 md:flex-shrink-0">
             <p className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">
               Upload Batches
             </p>
-            <div className="space-y-2">
+            {/* Horizontal scroll on mobile, vertical stack on md+ */}
+            <div className="flex md:flex-col gap-2 overflow-x-auto pb-1 md:pb-0 md:overflow-x-visible">
               {batches.map((batch) => (
                 <button
                   key={batch._id}
                   onClick={() => handleSelectBatch(batch._id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-colors ${selectedBatch === batch._id
+                  className={`flex-shrink-0 w-56 md:w-full text-left px-4 py-3 rounded-xl border text-sm transition-colors ${selectedBatch === batch._id
                       ? "bg-blue-600 border-blue-600 text-white"
                       : "bg-white border-gray-200 text-gray-700 hover:border-blue-300"
                     }`}
@@ -117,8 +118,8 @@ const ListsPage = () => {
               </div>
             ) : (
               <>
-                {/* Agent tabs */}
-                <div className="flex flex-wrap gap-2 mb-4">
+                {/* Agent tabs – scrollable on mobile */}
+                <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-1">
                   {batchLists.map((list) => (
                     <button
                       key={list.agent._id}
