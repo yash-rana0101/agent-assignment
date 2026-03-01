@@ -1,4 +1,4 @@
-const fs = require("fs");
+const { Readable } = require("stream");
 const path = require("path");
 const csv = require("csv-parser");
 const XLSX = require("xlsx");
@@ -6,22 +6,23 @@ const Agent = require("../models/Agent");
 const TaskList = require("../models/TaskList");
 
 /**
- * Parse a CSV file and return an array of task objects.
- * @param {string} filePath - Absolute path to the uploaded file
- * @returns {Promise<Array>} - Resolved array of { firstName, phone, notes }
+ * Parse a CSV buffer and return an array of task objects.
+ * Uses csv-parser on a Readable stream created from the in-memory buffer.
+ * @param {Buffer} buffer
+ * @returns {Promise<Array>}
  */
-const parseCSV = (filePath) => {
+const parseCSV = (buffer) => {
   return new Promise((resolve, reject) => {
     const results = [];
-    fs.createReadStream(filePath)
+    // Create a readable stream from the buffer so csv-parser can consume it
+    const stream = Readable.from(buffer.toString("utf-8"));
+    stream
       .pipe(csv())
       .on("data", (row) => {
-        // Normalize keys to lowercase and trim spaces
         const normalizedRow = {};
         Object.keys(row).forEach((key) => {
-          normalizedRow[key.trim().toLowerCase()] = row[key];
+          normalizedRow[key.trim().toLowerCase()] = String(row[key]).trim();
         });
-
         results.push({
           firstName: normalizedRow["firstname"] || normalizedRow["first_name"] || "",
           phone: normalizedRow["phone"] || normalizedRow["mobile"] || "",
@@ -34,25 +35,22 @@ const parseCSV = (filePath) => {
 };
 
 /**
- * Parse an XLSX / XLS file and return an array of task objects.
- * @param {string} filePath - Absolute path to the uploaded file
- * @returns {Array} - Array of { firstName, phone, notes }
+ * Parse an XLSX / XLS buffer and return an array of task objects.
+ * @param {Buffer} buffer
+ * @returns {Array}
  */
-const parseXLSX = (filePath) => {
-  const workbook = XLSX.readFile(filePath);
+const parseXLSX = (buffer) => {
+  // XLSX.read() works directly with a Buffer — no filesystem needed
+  const workbook = XLSX.read(buffer, { type: "buffer" });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-
-  // Convert sheet to JSON with header row as keys
   const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
   return rows.map((row) => {
-    // Normalize keys
     const normalizedRow = {};
     Object.keys(row).forEach((key) => {
-      normalizedRow[key.trim().toLowerCase()] = String(row[key]);
+      normalizedRow[key.trim().toLowerCase()] = String(row[key]).trim();
     });
-
     return {
       firstName: normalizedRow["firstname"] || normalizedRow["first_name"] || "",
       phone: normalizedRow["phone"] || normalizedRow["mobile"] || "",
@@ -60,6 +58,7 @@ const parseXLSX = (filePath) => {
     };
   });
 };
+
 
 /**
  * Distribute an array of items equally among agents.
@@ -84,7 +83,8 @@ const distributeItems = (items, agents) => {
 
 /**
  * @route   POST /api/lists/upload
- * @desc    Upload a CSV/XLSX and distribute rows among agents
+ * @desc    Upload a CSV/XLSX buffer and distribute rows among agents.
+ *          Uses req.file.buffer (memoryStorage) — no disk I/O needed.
  * @access  Private
  */
 const uploadAndDistribute = async (req, res) => {
@@ -92,31 +92,28 @@ const uploadAndDistribute = async (req, res) => {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  const filePath = req.file.path;
   const originalFileName = req.file.originalname;
   const ext = path.extname(originalFileName).toLowerCase();
+  const buffer = req.file.buffer; // in-memory buffer from multer memoryStorage
 
   try {
-    // Step 1: Parse the file based on its extension
+    // Step 1: Parse the buffer based on file extension
     let parsedItems = [];
 
     if (ext === ".csv") {
-      parsedItems = await parseCSV(filePath);
+      parsedItems = await parseCSV(buffer);
     } else if (ext === ".xlsx" || ext === ".xls") {
-      parsedItems = parseXLSX(filePath);
+      parsedItems = parseXLSX(buffer);
     } else {
-      // Clean up file and reject
-      fs.unlinkSync(filePath);
       return res.status(400).json({ message: "Unsupported file format. Use .csv, .xlsx, or .xls" });
     }
 
-    // Step 2: Filter out empty rows
+    // Step 2: Filter out completely empty rows
     const validItems = parsedItems.filter(
       (item) => item.firstName.trim() !== "" || item.phone.trim() !== ""
     );
 
     if (validItems.length === 0) {
-      fs.unlinkSync(filePath);
       return res.status(400).json({
         message: "The file is empty or does not match expected columns (FirstName, Phone, Notes)",
       });
@@ -125,32 +122,23 @@ const uploadAndDistribute = async (req, res) => {
     // Step 3: Get all agents from the database
     const agents = await Agent.find().select("-password");
     if (agents.length === 0) {
-      fs.unlinkSync(filePath);
       return res.status(400).json({
         message: "No agents found. Please add agents before uploading a list.",
       });
     }
 
-    // Step 4: Distribute items equally among agents
+    // Step 4: Distribute items round-robin among agents
     const distribution = distributeItems(validItems, agents);
 
-    // Step 5: Generate a batch ID to group this upload
+    // Step 5: Unique batch ID to group all distributions from this upload
     const batchId = Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-    // Step 6: Save each agent's task list to the database
+    // Step 6: Persist each agent's task list
     const savedLists = await Promise.all(
       distribution.map(({ agent, tasks }) =>
-        TaskList.create({
-          agent: agent._id,
-          tasks,
-          batchId,
-          originalFileName,
-        })
+        TaskList.create({ agent: agent._id, tasks, batchId, originalFileName })
       )
     );
-
-    // Step 7: Cleanup uploaded file from disk
-    fs.unlinkSync(filePath);
 
     res.status(201).json({
       message: `Successfully distributed ${validItems.length} items among ${agents.length} agents`,
@@ -164,8 +152,6 @@ const uploadAndDistribute = async (req, res) => {
       })),
     });
   } catch (error) {
-    // Clean up file if it still exists
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     console.error("Upload and distribute error:", error.message);
     res.status(500).json({ message: "Server error while processing the file" });
   }

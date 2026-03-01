@@ -6,9 +6,6 @@ const connectDB = require("./config/db");
 // Load env variables before anything else
 dotenv.config();
 
-// Connect to MongoDB
-connectDB();
-
 const app = express();
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
@@ -18,6 +15,18 @@ app.use(express.json());
 
 // Parse URL-encoded data
 app.use(express.urlencoded({ extended: false }));
+
+// Connect to DB lazily on first request — required for Vercel serverless where
+// the module is evaluated fresh on cold starts and there's no persistent process.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("DB connection middleware error:", err.message);
+    res.status(503).json({ message: "Database unavailable, please try again" });
+  }
+});
 
 // Allow cross-origin requests from both local dev and deployed frontend
 const allowedOrigins = [
@@ -70,9 +79,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
+// ─── Start Server (local dev only) ───────────────────────────────────────────
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// On Vercel, the app is exported as a serverless function — no listen() needed.
+// Locally, we still start the HTTP server normally.
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Required by Vercel — it imports this file as the serverless handler
+module.exports = app;
