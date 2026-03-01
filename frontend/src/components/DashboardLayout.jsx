@@ -63,8 +63,7 @@ const DashboardLayout = () => {
             to={item.to}
             onClick={() => setDrawerOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                isActive ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-100"
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${isActive ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-100"
               }`
             }
           >
@@ -117,9 +116,8 @@ const DashboardLayout = () => {
 
       {/* ── Mobile drawer ── */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white flex flex-col shadow-xl transform transition-transform duration-300 md:hidden ${
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white flex flex-col shadow-xl transform transition-transform duration-300 md:hidden ${drawerOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Drawer close button */}
         <button
@@ -165,8 +163,7 @@ const DashboardLayout = () => {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium ${
-                  isActive ? "text-blue-600" : "text-gray-500"
+                `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium ${isActive ? "text-blue-600" : "text-gray-500"
                 }`
               }
             >

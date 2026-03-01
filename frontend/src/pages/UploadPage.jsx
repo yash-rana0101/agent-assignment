@@ -90,8 +90,8 @@ const UploadPage = () => {
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl px-4 sm:px-6 py-10 sm:py-14 text-center cursor-pointer transition-colors ${dragOver
-            ? "border-blue-400 bg-blue-50"
-            : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+          ? "border-blue-400 bg-blue-50"
+          : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
           }`}
       >
         <input

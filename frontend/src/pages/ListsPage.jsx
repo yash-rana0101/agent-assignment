@@ -89,8 +89,8 @@ const ListsPage = () => {
                   key={batch._id}
                   onClick={() => handleSelectBatch(batch._id)}
                   className={`flex-shrink-0 w-56 md:w-full text-left px-4 py-3 rounded-xl border text-sm transition-colors ${selectedBatch === batch._id
-                      ? "bg-blue-600 border-blue-600 text-white"
-                      : "bg-white border-gray-200 text-gray-700 hover:border-blue-300"
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "bg-white border-gray-200 text-gray-700 hover:border-blue-300"
                     }`}
                 >
                   <p className="font-medium truncate">{batch.fileName || "Unnamed File"}</p>
@@ -125,8 +125,8 @@ const ListsPage = () => {
                       key={list.agent._id}
                       onClick={() => setActiveAgent(list.agent._id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border ${activeAgent === list.agent._id
-                          ? "bg-blue-50 border-blue-300 text-blue-700"
-                          : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                        ? "bg-blue-50 border-blue-300 text-blue-700"
+                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
                         }`}
                     >
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${activeAgent === list.agent._id ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
