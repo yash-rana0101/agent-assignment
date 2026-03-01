@@ -1,0 +1,10 @@
+{
+  "name": "agent-assignment",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "seed": "pnpm --filter backend seed",
+    "build": "pnpm --filter frontend build"
+  }
+}

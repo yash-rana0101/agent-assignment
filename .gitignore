@@ -1,0 +1,18 @@
+# Root
+node_modules/
+.DS_Store
+
+# Env files (never commit secrets)
+backend/.env
+frontend/.env
+
+# Upload temp folder
+backend/uploads/
+
+# Build output
+frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
