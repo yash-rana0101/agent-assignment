@@ -30,7 +30,7 @@ app.use(async (req, res, next) => {
 
 // Allow cross-origin requests from both local dev and deployed frontend
 const allowedOrigins = [
-  "http://localhost:5173",
+  "http://localhost:5173","https://agent-assignment-fi0ukuzs8-mrhacktivist01s-projects.vercel.app",
   process.env.CLIENT_URL, // set this to your Vercel frontend URL in production
 ].filter(Boolean);
 
