@@ -41,6 +41,7 @@ app.use(
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/agents", require("./routes/agentRoutes"));
 app.use("/api/lists", require("./routes/listRoutes"));
+app.use("/api/seed", require("./routes/seedRoutes"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

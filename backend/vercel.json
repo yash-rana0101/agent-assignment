@@ -11,5 +11,8 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ]
+  ],
+  "env": {
+    "CLIENT_URL": "https://agent-assignment-frontend.vercel.app"
+  }
 }
